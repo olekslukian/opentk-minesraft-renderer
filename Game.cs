@@ -4,6 +4,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Xml;
 
 
 namespace MinesraftRenderer
@@ -11,39 +12,111 @@ namespace MinesraftRenderer
     internal class Game : GameWindow
     {
 
-        private readonly float[] _vertices =
-        {
-              -0.5f, 0.5f, 0f, //top left vertex - 0
-              0.5f, 0.5f, 0f, //top right vertex - 1
-              0.5f, -0.5f, 0f, //bottom right vertex - 2
-              -0.5f, -0.5f, 0f //bottom left vertex - 3
-        };
 
-        private float[] _textureCoords =
-        {
-            0f, 1f,
-            1f, 1f,
-            1f, 0f,
-            0f, 0f
-        };
+        private readonly List<Vector3> _vertices = 
+        [
+            //front face
+            new Vector3(-0.5f, 0.5f, 0.5f), // top left vertex
+            new Vector3(0.5f, 0.5f, 0.5f), // top right vertex
+            new Vector3(0.5f, -0.5f, 0.5f), //bottom right vertex
+            new Vector3(-0.5f, -0.5f, 0.5f), // bottom left vertex
+            //right face
+            new Vector3(0.5f, 0.5f, 0.5f), 
+            new Vector3(0.5f, 0.5f, -0.5f), 
+            new Vector3(0.5f, -0.5f, -0.5f), 
+            new Vector3(0.5f, -0.5f, 0.5f),
+            //back face
+            new Vector3(0.5f, 0.5f, -0.5f),
+            new Vector3(-0.5f, 0.5f, -0.5f),
+            new Vector3(-0.5f, -0.5f, -0.5f),
+            new Vector3(0.5f, -0.5f, -0.5f),
+            //left face
+            new Vector3(-0.5f, 0.5f, -0.5f),
+            new Vector3(-0.5f, 0.5f, 0.5f),
+            new Vector3(-0.5f, -0.5f, 0.5f),
+            new Vector3(-0.5f, -0.5f, -0.5f),
+            //top face
+            new Vector3(-0.5f, 0.5f, -0.5f),
+            new Vector3(0.5f, 0.5f, -0.5f),
+            new Vector3(0.5f, 0.5f, 0.5f),
+            new Vector3(-0.5f, 0.5f, 0.5f),
+            //bottom face
+            new Vector3(-0.5f, -0.5f, 0.5f),
+            new Vector3(0.5f, -0.5f, 0.5f),
+            new Vector3(0.5f, -0.5f, -0.5f),
+            new Vector3(-0.5f, -0.5f, -0.5f),
 
-        private uint[] _indices =
+        ];
+
+        private readonly List<Vector2> _texCoords =
+        [
+            //front face
+            new Vector2(0f, 1f),
+            new Vector2(1f, 1f),
+            new Vector2(1f, 0f),
+            new Vector2(0f, 0f),
+            //right face
+            new Vector2(0f, 1f),
+            new Vector2(1f, 1f),
+            new Vector2(1f, 0f),
+            new Vector2(0f, 0f),
+            //back face
+            new Vector2(0f, 1f),
+            new Vector2(1f, 1f),
+            new Vector2(1f, 0f),
+            new Vector2(0f, 0f),
+            //left face
+            new Vector2(0f, 1f),
+            new Vector2(1f, 1f),
+            new Vector2(1f, 0f),
+            new Vector2(0f, 0f),
+            //top face
+            new Vector2(0f, 1f),
+            new Vector2(1f, 1f),
+            new Vector2(1f, 0f),
+            new Vector2(0f, 0f),
+            //bottom face
+            new Vector2(0f, 1f),
+            new Vector2(1f, 1f),
+            new Vector2(1f, 0f),
+            new Vector2(0f, 0f),
+        ];
+
+        private readonly uint[] _indices =
         {
             //top triangle
             0, 1 ,2,
             //bottom triangle
-            2, 3, 0
+            2, 3, 0,
+
+            4, 5, 6,
+            6, 7, 4,
+
+            8, 9, 10,
+            10, 11, 8,
+
+            12, 13, 14,
+            14, 15, 12,
+
+            16, 17, 18,
+            18, 19, 16,
+
+            20, 21, 22,
+            22, 23, 20
                  
         };
 
 
         //Render pipeline vars
-        int _vao;
-        int _vbo;
-        int _textureVbo;
-        int _shaderProgram;
-        int _ebo;
-        int _textureId;
+        private int _vao;
+        private int _vbo;
+        private int _textureVbo;
+        private int _shaderProgram;
+        private int _ebo;
+        private int _textureId;
+
+        //Transformation vars
+        private float yRot = 0f;
 
 
         private int _width, _height;
@@ -76,7 +149,7 @@ namespace MinesraftRenderer
 
             _vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length*sizeof(float), _vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Count * Vector3.SizeInBytes, _vertices.ToArray(), BufferUsageHint.StaticDraw);
 
             //Put the vertex vbo in slot 0 of our vao
             // Pointer slot 0 of the VAO  to the currently bound VBO
@@ -88,7 +161,7 @@ namespace MinesraftRenderer
             // TEXTURE VBO
             _textureVbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _textureVbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, _textureCoords.Length*sizeof(float), _textureCoords, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, _texCoords.Count * Vector3.SizeInBytes, _texCoords.ToArray(), BufferUsageHint.StaticDraw);
 
             //Pointer slot 1 of the VAO to the currently bount VBO
             GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, 0, 0);
@@ -141,6 +214,8 @@ namespace MinesraftRenderer
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, dirtTexture.Width, dirtTexture.Height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, dirtTexture.Data);
             //Unbind the texture
             GL.BindTexture(TextureTarget.Texture2D, 0);
+
+            GL.Enable(EnableCap.DepthTest);
         }
 
         protected override void OnUnload()
@@ -157,15 +232,33 @@ namespace MinesraftRenderer
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             GL.ClearColor(Color4.CornflowerBlue);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             //Draw triangle
             GL.UseProgram(_shaderProgram);
+            GL.BindVertexArray(_vao);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
 
             GL.BindTexture(TextureTarget.Texture2D, _textureId);
 
-            GL.BindVertexArray(_vao);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
+            //transformation matrices
+            Matrix4 model = Matrix4.Identity;
+            Matrix4 view = Matrix4.Identity;
+            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(60.0f), _width / _height, 0.1f, 100.0f);
+
+            model = Matrix4.CreateRotationY(yRot);
+            yRot += 0.003f;
+            model *= Matrix4.CreateTranslation(0f, 0f, -3f);
+
+            int modelLocation = GL.GetUniformLocation(_shaderProgram, "model");
+            int viewLocation = GL.GetUniformLocation(_shaderProgram, "view");
+            int projectionlLocation = GL.GetUniformLocation(_shaderProgram, "projection");
+
+            GL.UniformMatrix4(modelLocation, true, ref model);
+            GL.UniformMatrix4(viewLocation, true, ref view);
+            GL.UniformMatrix4(projectionlLocation, true, ref projection);
+
+
             GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
 
             Context.SwapBuffers();
