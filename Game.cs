@@ -110,7 +110,7 @@ namespace MinesraftRenderer
 
             try
             {
-                using(StreamReader rader =  new("../../../Shaders" + path))
+                using(StreamReader rader =  new("../../../Shaders/" + path))
                 {
                     shaderSource = rader.ReadToEnd();
                 }
