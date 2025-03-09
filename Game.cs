@@ -134,6 +134,7 @@ namespace MinesraftRenderer
         protected override void OnResize(ResizeEventArgs e)
         {
             base.OnResize(e);
+
             GL.Viewport(0, 0, e.Width, e.Height);
             _width = e.Width;
             _height = e.Height;
@@ -252,7 +253,7 @@ namespace MinesraftRenderer
             //transformation matrices
             Matrix4 model = Matrix4.Identity;
             Matrix4 view = _camera.GetViewMatrix();
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(60.0f), _width / _height, 0.1f, 100.0f);
+            Matrix4 projection = _camera.GetProjectionMatrix();
 
             model = Matrix4.CreateRotationY(yRot);
             yRot += 0.003f;
@@ -297,7 +298,7 @@ namespace MinesraftRenderer
 
             try
             {
-                using(StreamReader rader =  new("../../../Shaders/" + path))
+                using (StreamReader rader = new("../../../Shaders/" + path))
                 {
                     shaderSource = rader.ReadToEnd();
                 }

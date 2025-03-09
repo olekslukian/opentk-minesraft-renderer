@@ -88,7 +88,7 @@ namespace MinesraftRenderer
                 _position.Y += SPEED * (float)e.Time;
             }
 
-            if (input.IsKeyDown(Keys.LeftShift))
+            if (input.IsKeyDown(Keys.LeftControl))
             {
                 _position.Y -= SPEED * (float)e.Time;
             }
