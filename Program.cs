@@ -4,7 +4,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        using Game game = new(500, 500);
+        using Game game = new(1920, 1080);
         game.Run();
     }
 }

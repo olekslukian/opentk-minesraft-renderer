@@ -115,6 +115,9 @@ namespace MinesraftRenderer
         private int _ebo;
         private int _textureId;
 
+        //CAMERA
+        private Camera? _camera;
+
         //Transformation vars
         private float yRot = 0f;
 
@@ -125,7 +128,7 @@ namespace MinesraftRenderer
             _width = width;
             _height = height;
      
-            this.CenterWindow(new(width, height));
+            CenterWindow(new(width, height));
         }
 
         protected override void OnResize(ResizeEventArgs e)
@@ -216,6 +219,9 @@ namespace MinesraftRenderer
             GL.BindTexture(TextureTarget.Texture2D, 0);
 
             GL.Enable(EnableCap.DepthTest);
+
+            _camera = new Camera(_width, _height, Vector3.Zero);
+            CursorState = CursorState.Grabbed;
         }
 
         protected override void OnUnload()
@@ -231,6 +237,8 @@ namespace MinesraftRenderer
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
+            if (_camera == null) throw new Exception("Camera is not initialized");
+
             GL.ClearColor(Color4.CornflowerBlue);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -243,7 +251,7 @@ namespace MinesraftRenderer
 
             //transformation matrices
             Matrix4 model = Matrix4.Identity;
-            Matrix4 view = Matrix4.Identity;
+            Matrix4 view = _camera.GetViewMatrix();
             Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(60.0f), _width / _height, 0.1f, 100.0f);
 
             model = Matrix4.CreateRotationY(yRot);
@@ -268,7 +276,19 @@ namespace MinesraftRenderer
 
         protected override void OnUpdateFrame(FrameEventArgs args)
         {
-            base.OnUpdateFrame(args);   
+            if (_camera == null) throw new Exception("Camera is not initialized");
+
+            MouseState mouse = MouseState;
+            KeyboardState keyboard = KeyboardState;
+
+            base.OnUpdateFrame(args);
+
+            _camera.Update(keyboard, mouse, args);
+
+            if (keyboard.IsKeyDown(Keys.Escape))
+            {
+                Environment.Exit(0);
+            }
         }
 
         public static string LoadShaderSource(string path)
