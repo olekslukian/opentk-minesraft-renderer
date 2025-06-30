@@ -5,7 +5,7 @@ namespace MinesraftRenderer.Graphics
 {
     class Texture : IRenderObject
     {
-        private static readonly string TEXTURES_DIR = "../../../Textures/";
+        private static readonly string TEXTURES_DIR = "Textures/";
 
         public int ID;
 

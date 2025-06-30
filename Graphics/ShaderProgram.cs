@@ -9,7 +9,7 @@ namespace MinesraftRenderer.Graphics
 {
     class ShaderProgram : IRenderObject
     {
-        private static readonly string SHADERS_DIR = "../../../Shaders/";
+        private static readonly string SHADERS_DIR = "Shaders/";
 
         public int ID;
         public ShaderProgram(string vertShaderFileName, string fragShaderFileName)

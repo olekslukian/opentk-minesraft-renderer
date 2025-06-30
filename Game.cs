@@ -1,10 +1,8 @@
-﻿using StbImageSharp;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Xml;
 using MinesraftRenderer.Graphics;
 using MinesraftRenderer.World;
 
@@ -36,7 +34,7 @@ namespace MinesraftRenderer
         {
             base.OnResize(e);
 
-            GL.Viewport(0, 0, e.Width, e.Height);
+            GL.Viewport(0, 0, FramebufferSize.X, FramebufferSize.Y);
             _width = e.Width;
             _height = e.Height;
         }
